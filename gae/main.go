@@ -23,15 +23,24 @@ var (
 
 	key_rsa   []byte
 	certs_rsa []byte
+	
+	key_ec256_invalid   []byte
+	certs_ec256_invalid []byte
+	
+	old_ocsp  []byte
 )
 
 type Config struct {
 	DemoDomainName  string `json:"demo_domain"`
 	DemoAppSpotName string `json:"demo_appspot"`
-	EC256KeyName    string `json:"ec256_key_file"`
-	EC256CertName   string `json:"ec256_cert_file"`
-	RSAKeyName      string `json:"rsa_key_file"`
-	RSACertName     string `json:"rsa_cert_file"`
+	EC256KeyFile    string `json:"ec256_key_file"`
+	EC256CertFile   string `json:"ec256_cert_file"`
+	RSAKeyFile      string `json:"rsa_key_file"`
+	RSACertFile     string `json:"rsa_cert_file"`
+	EC256InvalidKeyFile    string `json:"ec256_invalid_key_file"`
+	EC256InvalidCertFile   string `json:"ec256_invalid_cert_file"`
+	
+	OldOCSPFile   string `json:"old_ocsp_file"`
 }
 
 func init() {
@@ -47,18 +56,23 @@ func init() {
 	demo_domain_name = config.DemoDomainName
 	demo_appspot_name = config.DemoAppSpotName
 
-	key_ec256, _ = ioutil.ReadFile(config.EC256KeyName)
-	certs_ec256, _ = ioutil.ReadFile(config.EC256CertName)
-	key_rsa, _ = ioutil.ReadFile(config.RSAKeyName)
-	certs_rsa, _ = ioutil.ReadFile(config.RSACertName)
+	key_ec256, _ = ioutil.ReadFile(config.EC256KeyFile)
+	certs_ec256, _ = ioutil.ReadFile(config.EC256CertFile)
+	key_rsa, _ = ioutil.ReadFile(config.RSAKeyFile)
+	certs_rsa, _ = ioutil.ReadFile(config.RSACertFile)
+	key_ec256_invalid, _ = ioutil.ReadFile(config.EC256InvalidKeyFile)
+	certs_ec256_invalid, _ = ioutil.ReadFile(config.EC256InvalidCertFile)
+	
+	old_ocsp, _ = ioutil.ReadFile(config.OldOCSPFile)
 }
 
 func main() {
 	http.HandleFunc("/cert/", certHandler)
 	http.HandleFunc("/sxg/", signedExchangeHandler)
+	http.HandleFunc("/", defaultHandler)
 	appengine.Main()
 }
 
-func handle(w http.ResponseWriter, r *http.Request) {
+func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Hello, world!")
 }

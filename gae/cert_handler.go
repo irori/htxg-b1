@@ -84,6 +84,19 @@ func certHandler(w http.ResponseWriter, r *http.Request) {
 	} else if r.URL.Path == "/cert/rsa" {
 		respondWithCertificateMessage(w, r, certs_rsa)
 		return
+	} else if r.URL.Path == "/cert/ec256_invalid" {
+		respondWithCertificateMessage(w, r, certs_ec256_invalid)
+		return
+	} else if r.URL.Path == "/cert/old_ocsp" {
+		message, err := certurl.CertificateMessageFromPEM(certs_ec256, old_ocsp, []byte("dummy sct"))
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		w.Header().Set("Content-Type", "application/application/cert-chain+cbor")
+		w.Header().Set("Cache-Control", "public, max-age=100")
+		w.Write(message)
+		return
 	}
 	http.Error(w, "Not Found", 404)
 }
