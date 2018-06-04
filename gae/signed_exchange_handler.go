@@ -12,7 +12,7 @@ import (
 	"time"
 	"errors"
 
-	"github.com/nyaxt/webpackage/go/signedexchange"
+	"github.com/WICG/webpackage/go/signedexchange"
 )
 
 func createExchange(contentUrl string, certUrlStr string, validityUrlStr string, pemCerts []byte, pemPrivateKey []byte, filename string, linkPreloadString string, date time.Time) (*signedexchange.Exchange, error)  {
