@@ -72,7 +72,7 @@ func respondWithCertificateMessage(w http.ResponseWriter, r *http.Request, pem [
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	w.Header().Set("Content-Type", "application/application/cert-chain+cbor")
+	w.Header().Set("Content-Type", "application/cert-chain+cbor")
 	w.Header().Set("Cache-Control", "public, max-age=100")
 	w.Write(message)
 }
@@ -93,7 +93,7 @@ func certHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		w.Header().Set("Content-Type", "application/application/cert-chain+cbor")
+		w.Header().Set("Content-Type", "application/cert-chain+cbor")
 		w.Header().Set("Cache-Control", "public, max-age=100")
 		w.Write(message)
 		return
