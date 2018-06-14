@@ -7,6 +7,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -74,5 +75,14 @@ func main() {
 }
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Hello, world!")
+	t := template.Must(template.ParseFiles("templates/index.html"))
+
+	type Data struct {
+		Host string
+	}
+	data := Data {Host: demo_appspot_name}
+
+	if err := t.ExecuteTemplate(w, "index.html", data); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
