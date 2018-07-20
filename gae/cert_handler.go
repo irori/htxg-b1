@@ -8,6 +8,7 @@ import (
 	"appengine"
 	"appengine/urlfetch"
 	"bytes"
+	"crypto/x509"
 	"errors"
 	"github.com/WICG/webpackage/go/signedexchange"
 	"github.com/WICG/webpackage/go/signedexchange/certurl"
@@ -16,11 +17,7 @@ import (
 	"net/http"
 )
 
-func getOCSP(ctx appengine.Context, pem []byte) ([]byte, error) {
-	certs, err := signedexchange.ParseCertificates(pem)
-	if err != nil {
-		return nil, err
-	}
+func getOCSP(ctx appengine.Context, certs []*x509.Certificate) ([]byte, error) {
 	if len(certs) < 2 {
 		return nil, errors.New("failed to parse cert")
 	}
@@ -57,12 +54,16 @@ func getOCSP(ctx appengine.Context, pem []byte) ([]byte, error) {
 }
 
 func getCertMessage(ctx appengine.Context, pem []byte) ([]byte, error) {
-	ocsp, err := getOCSP(ctx, pem)
+	certs, err := signedexchange.ParseCertificates(pem)
+	if err != nil {
+		return nil, err
+	}
+	ocsp, err := getOCSP(ctx, certs)
 	if err != nil {
 		return nil, err
 	}
 	// TODO: Support sct
-	return certurl.CertificateMessageFromPEM(pem, ocsp, []byte("dummy sct"))
+	return certurl.CreateCertChainCBOR(certs, ocsp, nil)
 }
 
 func respondWithCertificateMessage(w http.ResponseWriter, r *http.Request, pem []byte) {
@@ -88,7 +89,12 @@ func certHandler(w http.ResponseWriter, r *http.Request) {
 		respondWithCertificateMessage(w, r, certs_ec256_invalid)
 		return
 	} else if r.URL.Path == "/cert/old_ocsp" {
-		message, err := certurl.CertificateMessageFromPEM(certs_ec256, old_ocsp, []byte("dummy sct"))
+		parced_certs, err := signedexchange.ParseCertificates(certs_ec256)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		message, err := certurl.CreateCertChainCBOR(parced_certs, old_ocsp, nil)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return

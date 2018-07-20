@@ -52,9 +52,12 @@ func createExchange(contentUrl string, certUrlStr string, validityUrlStr string,
 		resHeader.Add("link", linkPreloadString)
 	}
 
-	e, err := signedexchange.NewExchange(parsedUrl, reqHeader, 200, resHeader, []byte(payload), 4096)
+	e, err := signedexchange.NewExchange(parsedUrl, reqHeader, 200, resHeader, []byte(payload))
 	if err != nil {
 		return nil,  err
+	}
+	if err := e.MiEncodePayload(4096); err != nil {
+		return nil, err
 	}
 
 	s := &signedexchange.Signer{
