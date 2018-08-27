@@ -78,10 +78,25 @@ func createExchange(ver version.Version, contentUrl string, certUrlStr string, v
 	return e, nil;
 }
 
-func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
-	ver := version.Version1b1
+func contentType(v version.Version) string {
+	switch v {
+	case version.Version1b1:
+		return "application/signed-exchange;v=b1"
+	case version.Version1b2:
+		return "application/signed-exchange;v=b2"
+	default:
+		panic("not reached")
+	}
+}
 
-	w.Header().Set("Content-Type", "application/signed-exchange;v=b1")
+func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	ver, ok := version.Parse(q.Get("v"))
+	if !ok {
+		ver = version.Version1b2
+	}
+
+	w.Header().Set("Content-Type", contentType(ver))
 	
 	nullValidityUrl := "https://"+demo_domain_name+"/cert/null.validity.msg"
 	

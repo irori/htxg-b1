@@ -1,3 +1,11 @@
+<!DOCTYPE html>
+<head>
+<style>
+  .version-select {
+      margin: 1rem;
+  }
+</style>
+</head>
 <body>
   <script>
   function log(txt) {
@@ -20,32 +28,40 @@
       log(entry.name);
     });
   }
+  function changeVer(ver) {
+      location.search = '?v=' + ver;
+  }
 
   </script>
-  <div>
-    <input type="button" onclick="addPrefetch('https://{{ .Host }}/sxg/hello_ec.sxg')" value="prefetch">
-    <a href="https://{{ .Host }}/sxg/hello_ec.sxg">hello_ec.sxg</a>
+  <div class="version-select">
+    Version:
+    <input type="radio" id="1b1" name="v" value="1b1" {{if eq .Ver "1b1"}}checked{{end}} onclick="changeVer('1b1')"><label for="1b1">b1</label>
+    <input type="radio" id="1b2" name="v" value="1b2" {{if ne .Ver "1b1"}}checked{{end}} onclick="changeVer('1b2')"><label for="1b2">b2</label>
   </div>
   <div>
-    <input type="button" onclick="addPrefetch('https://{{ .Host }}/sxg/404_cert_url.sxg')" value="prefetch">
-    <a href="https://{{ .Host }}/sxg/404_cert_url.sxg">404_cert_url.sxg</a>
+    <input type="button" onclick="addPrefetch('https://{{ .Host }}/sxg/hello_ec.sxg?v={{ .Ver }}')" value="prefetch">
+    <a href="https://{{ .Host }}/sxg/hello_ec.sxg?v={{ .Ver }}">hello_ec.sxg</a>
   </div>
   <div>
-    <input type="button" onclick="addPrefetch('https://{{ .Host }}/sxg/expired.sxg')" value="prefetch">
-    <a href="https://{{ .Host }}/sxg/expired.sxg">expired.sxg</a>
+    <input type="button" onclick="addPrefetch('https://{{ .Host }}/sxg/404_cert_url.sxg?v={{ .Ver }}')" value="prefetch">
+    <a href="https://{{ .Host }}/sxg/404_cert_url.sxg?v={{ .Ver }}">404_cert_url.sxg</a>
   </div>
   <div>
-    <input type="button" onclick="addPrefetch('https://{{ .Host }}/sxg/invalid_validity_url.sxg')" value="prefetch">
-    <a href="https://{{ .Host }}/sxg/invalid_validity_url.sxg">invalid_validity_url.sxg</a>
+    <input type="button" onclick="addPrefetch('https://{{ .Host }}/sxg/expired.sxg?v={{ .Ver }}')" value="prefetch">
+    <a href="https://{{ .Host }}/sxg/expired.sxg?v={{ .Ver }}">expired.sxg</a>
   </div>
   <div>
-    <input type="button" onclick="addPrefetch('http://{{ .Host }}/sxg/hello_ec.sxg')" value="prefetch">
-    <a href="http://{{ .Host }}/sxg/hello_ec.sxg">non secure hello_ec.sxg</a>
+    <input type="button" onclick="addPrefetch('https://{{ .Host }}/sxg/invalid_validity_url.sxg?v={{ .Ver }}')" value="prefetch">
+    <a href="https://{{ .Host }}/sxg/invalid_validity_url.sxg?v={{ .Ver }}">invalid_validity_url.sxg</a>
   </div>
   <div>
-    <input type="button" onclick="addPrefetch('https://{{ .Host }}/sxg/old_ocsp.sxg')" value="prefetch">
-    <a href="https://{{ .Host }}/sxg/old_ocsp.sxg">old_ocsp.sxg</a>
+    <input type="button" onclick="addPrefetch('http://{{ .Host }}/sxg/hello_ec.sxg?v={{ .Ver }}')" value="prefetch">
+    <a href="http://{{ .Host }}/sxg/hello_ec.sxg?v={{ .Ver }}">non secure hello_ec.sxg</a>
+  </div>
+  <div>
+    <input type="button" onclick="addPrefetch('https://{{ .Host }}/sxg/old_ocsp.sxg?v={{ .Ver }}')" value="prefetch">
+    <a href="https://{{ .Host }}/sxg/old_ocsp.sxg?v={{ .Ver }}">old_ocsp.sxg</a>
   </div>
   <input type="button" onclick="showPerformanceEntries()" value="showPerformanceEntries">
   <div id="disp"></div>
-  </body>
+</body>
