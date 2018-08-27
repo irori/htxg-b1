@@ -13,9 +13,10 @@ import (
 	"errors"
 
 	"github.com/WICG/webpackage/go/signedexchange"
+	"github.com/WICG/webpackage/go/signedexchange/version"
 )
 
-func createExchange(contentUrl string, certUrlStr string, validityUrlStr string, pemCerts []byte, pemPrivateKey []byte, filename string, linkPreloadString string, date time.Time) (*signedexchange.Exchange, error)  {
+func createExchange(ver version.Version, contentUrl string, certUrlStr string, validityUrlStr string, pemCerts []byte, pemPrivateKey []byte, filename string, linkPreloadString string, date time.Time) (*signedexchange.Exchange, error)  {
 	payload, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
@@ -56,7 +57,7 @@ func createExchange(contentUrl string, certUrlStr string, validityUrlStr string,
 	if err != nil {
 		return nil,  err
 	}
-	if err := e.MiEncodePayload(4096); err != nil {
+	if err := e.MiEncodePayload(4096, ver); err != nil {
 		return nil, err
 	}
 
@@ -71,88 +72,90 @@ func createExchange(contentUrl string, certUrlStr string, validityUrlStr string,
 	if s == nil {
 		return nil,  errors.New("Failed to sing")
 	}
-	if err := e.AddSignatureHeader(s); err != nil {
+	if err := e.AddSignatureHeader(s, ver); err != nil {
 		return nil, err
 	}
 	return e, nil;
 }
 
 func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
+	ver := version.Version1b1
+
 	w.Header().Set("Content-Type", "application/signed-exchange;v=b1")
 	
 	nullValidityUrl := "https://"+demo_domain_name+"/cert/null.validity.msg"
 	
 	if r.URL.Path == "/sxg/hello_rsa.sxg" {
-		e, err := createExchange("https://"+demo_domain_name+"/hello_rsa.html", "https://"+demo_appspot_name+"/cert/rsa", nullValidityUrl , certs_rsa, key_rsa, "hello.html", "", time.Now().Add(-time.Second*10))
+		e, err := createExchange(ver, "https://"+demo_domain_name+"/hello_rsa.html", "https://"+demo_appspot_name+"/cert/rsa", nullValidityUrl , certs_rsa, key_rsa, "hello.html", "", time.Now().Add(-time.Second*10))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		signedexchange.WriteExchangeFile(w, e)
+		e.Write(w, ver)
 		return
 	}
 	if r.URL.Path == "/sxg/hello_ec.sxg" {
-		e, err := createExchange("https://"+demo_domain_name+"/hello_ec.html", "https://"+demo_appspot_name+"/cert/ec256", nullValidityUrl, certs_ec256, key_ec256, "hello.html", "", time.Now().Add(-time.Second*10))
+		e, err := createExchange(ver, "https://"+demo_domain_name+"/hello_ec.html", "https://"+demo_appspot_name+"/cert/ec256", nullValidityUrl, certs_ec256, key_ec256, "hello.html", "", time.Now().Add(-time.Second*10))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		signedexchange.WriteExchangeFile(w, e)
+		e.Write(w, ver)
 		return
 	}
 	if r.URL.Path == "/sxg/404_cert_url.sxg" {
-		e, err := createExchange("https://"+demo_domain_name+"/hello_ec.html", "https://"+demo_appspot_name+"/cert/not_found", nullValidityUrl, certs_ec256, key_ec256, "hello.html", "", time.Now().Add(-time.Second*10))
+		e, err := createExchange(ver, "https://"+demo_domain_name+"/hello_ec.html", "https://"+demo_appspot_name+"/cert/not_found", nullValidityUrl, certs_ec256, key_ec256, "hello.html", "", time.Now().Add(-time.Second*10))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		signedexchange.WriteExchangeFile(w, e)
+		e.Write(w, ver)
 		return
 	}
 	if r.URL.Path == "/sxg/invalid_cert_url.sxg" {
-		e, err := createExchange("https://"+demo_domain_name+"/hello_ec.html", "https://"+demo_appspot_name+"/cert/ec256_invalid", nullValidityUrl, certs_ec256_invalid, key_ec256_invalid, "hello.html", "", time.Now().Add(-time.Second*10))
+		e, err := createExchange(ver, "https://"+demo_domain_name+"/hello_ec.html", "https://"+demo_appspot_name+"/cert/ec256_invalid", nullValidityUrl, certs_ec256_invalid, key_ec256_invalid, "hello.html", "", time.Now().Add(-time.Second*10))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		signedexchange.WriteExchangeFile(w, e)
+		e.Write(w, ver)
 		return
 	}
 	if r.URL.Path == "/sxg/sha256_missmatch.sxg" {
-		e, err := createExchange("https://"+demo_domain_name+"/hello_ec.html", "https://"+demo_appspot_name+"/cert/ec256", nullValidityUrl, certs_ec256_invalid, key_ec256_invalid, "hello.html", "", time.Now().Add(-time.Second*10))
+		e, err := createExchange(ver, "https://"+demo_domain_name+"/hello_ec.html", "https://"+demo_appspot_name+"/cert/ec256", nullValidityUrl, certs_ec256_invalid, key_ec256_invalid, "hello.html", "", time.Now().Add(-time.Second*10))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		signedexchange.WriteExchangeFile(w, e)
+		e.Write(w, ver)
 		return
 	}
 	if r.URL.Path == "/sxg/expired.sxg" {
-		e, err := createExchange("https://"+demo_domain_name+"/hello_ec.html", "https://"+demo_appspot_name+"/cert/ec256", nullValidityUrl, certs_ec256, key_ec256, "hello.html", "", time.Now().Add(-time.Hour * 240))
+		e, err := createExchange(ver, "https://"+demo_domain_name+"/hello_ec.html", "https://"+demo_appspot_name+"/cert/ec256", nullValidityUrl, certs_ec256, key_ec256, "hello.html", "", time.Now().Add(-time.Hour * 240))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		signedexchange.WriteExchangeFile(w, e)
+		e.Write(w, ver)
 		return
 	}
 	if r.URL.Path == "/sxg/invalid_validity_url.sxg" {
 		invalidValidityUrl := "https://invalid."+demo_domain_name+"/cert/null.validity.msg"
-		e, err := createExchange("https://"+demo_domain_name+"/hello_ec.html", "https://"+demo_appspot_name+"/cert/ec256", invalidValidityUrl, certs_ec256, key_ec256, "hello.html", "", time.Now().Add(-time.Second*10))
+		e, err := createExchange(ver, "https://"+demo_domain_name+"/hello_ec.html", "https://"+demo_appspot_name+"/cert/ec256", invalidValidityUrl, certs_ec256, key_ec256, "hello.html", "", time.Now().Add(-time.Second*10))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		signedexchange.WriteExchangeFile(w, e)
+		e.Write(w, ver)
 		return
 	}
 	if r.URL.Path == "/sxg/old_ocsp.sxg" {
-		e, err := createExchange("https://"+demo_domain_name+"/hello_ec.html", "https://"+demo_appspot_name+"/cert/old_ocsp", nullValidityUrl, certs_ec256, key_ec256, "hello.html", "", time.Now().Add(-time.Second*10))
+		e, err := createExchange(ver, "https://"+demo_domain_name+"/hello_ec.html", "https://"+demo_appspot_name+"/cert/old_ocsp", nullValidityUrl, certs_ec256, key_ec256, "hello.html", "", time.Now().Add(-time.Second*10))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		signedexchange.WriteExchangeFile(w, e)
+		e.Write(w, ver)
 		return
 	}
 	http.Error(w, "signedExchangeHandler", 404)
