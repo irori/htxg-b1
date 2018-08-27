@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <head>
+<title>Signed Exchange test</title>
 <style>
   .version-select {
-      margin: 1rem;
+    margin: 1rem;
+  }
+  .github-link {
+    margin: 1rem 0;
   }
 </style>
 </head>
@@ -21,15 +25,17 @@
     link.href = url;
     document.body.appendChild(link);
   }
-  function showPerformanceEntries() {
-    log('-- showPerformanceEntries --');
-    let entries = performance.getEntries();
-    entries.forEach(entry => {
-      log(entry.name);
-    });
-  }
   function changeVer(ver) {
       location.search = '?v=' + ver;
+  }
+
+  if (window.PerformanceObserver) {
+    new PerformanceObserver((list) => {
+      for (let e of list.getEntries()) {
+        if (e.name.indexOf('.sxg') >= 0)
+          log('Prefetched ' + e.name);
+      }
+    }).observe({ entryTypes: ['resource'] });
   }
 
   </script>
@@ -62,6 +68,6 @@
     <input type="button" onclick="addPrefetch('https://{{ .Host }}/sxg/old_ocsp.sxg?v={{ .Ver }}')" value="prefetch">
     <a href="https://{{ .Host }}/sxg/old_ocsp.sxg?v={{ .Ver }}">old_ocsp.sxg</a>
   </div>
-  <input type="button" onclick="showPerformanceEntries()" value="showPerformanceEntries">
+  <div class="github-link"><a href="https://github.com/irori/htxg-b1">View on GitHub</a></div>
   <div id="disp"></div>
 </body>
