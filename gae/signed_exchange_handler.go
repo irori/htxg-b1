@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"time"
 	"errors"
+	"strings"
 
 	"github.com/WICG/webpackage/go/signedexchange"
 	"github.com/WICG/webpackage/go/signedexchange/version"
@@ -89,11 +90,23 @@ func contentType(v version.Version) string {
 	}
 }
 
+func versionFromAcceptHeader(accept string) version.Version {
+	for _, t := range strings.Split(accept, ",") {
+		switch strings.TrimSpace(t) {
+		case "application/signed-exchange;v=b1":
+			return version.Version1b1
+		case "application/signed-exchange;v=b2":
+			return version.Version1b2
+		}
+	}
+	return version.Version1b2
+}
+
 func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	ver, ok := version.Parse(q.Get("v"))
 	if !ok {
-		ver = version.Version1b2
+		ver = versionFromAcceptHeader(r.Header.Get("accept"))
 	}
 
 	w.Header().Set("Content-Type", contentType(ver))
