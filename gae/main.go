@@ -81,8 +81,19 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	type Data struct {
 		Host string
 		Ver string
+		SXGs []string
 	}
-	data := Data {Host: demo_appspot_name, Ver: q.Get("v")}
+	data := Data {
+		Host: demo_appspot_name,
+		Ver: q.Get("v"),
+		SXGs: []string{
+			"hello_ec.sxg",
+			"404_cert_url.sxg",
+			"expired.sxg",
+			"invalid_validity_url.sxg",
+			"old_ocsp.sxg",
+		},
+	}
 
 	if err := t.ExecuteTemplate(w, "index.html", data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
