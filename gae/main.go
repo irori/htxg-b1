@@ -92,6 +92,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 			"expired.sxg",
 			"invalid_validity_url.sxg",
 			"old_ocsp.sxg",
+			"nested_sxg.sxg",
 		},
 	}
 

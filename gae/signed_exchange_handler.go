@@ -5,9 +5,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/pem"
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -17,6 +17,19 @@ import (
 	"github.com/WICG/webpackage/go/signedexchange/version"
 )
 
+const defaultPayload = `<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello SignedHTTPExchange</title>
+  </head>
+  <body>
+    <div id="message">
+      <h1>Hello SignedHTTPExchange</h1>
+    </div>
+  </body>
+</html>
+`
+
 type exchangeParams struct {
 	ver               version.Version
 	contentUrl        string
@@ -24,16 +37,13 @@ type exchangeParams struct {
 	validityUrl       string
 	pemCerts          []byte
 	pemPrivateKey     []byte
-	filename          string
+	contentType       string
+	payload           []byte
 	linkPreloadString string
 	date              time.Time
 }
 
 func createExchange(params *exchangeParams) (*signedexchange.Exchange, error) {
-	payload, err := ioutil.ReadFile(params.filename)
-	if err != nil {
-		return nil, err
-	}
 	certUrl, _ := url.Parse(params.certUrl)
 	validityUrl, _ := url.Parse(params.validityUrl)
 	certs, err := signedexchange.ParseCertificates(params.pemCerts)
@@ -60,13 +70,13 @@ func createExchange(params *exchangeParams) (*signedexchange.Exchange, error) {
 	}
 	reqHeader := http.Header{}
 	resHeader := http.Header{}
-	resHeader.Add("content-type", "text/html; charset=utf-8")
+	resHeader.Add("content-type", params.contentType)
 
 	if params.linkPreloadString != "" {
 		resHeader.Add("link", params.linkPreloadString)
 	}
 
-	e, err := signedexchange.NewExchange(parsedUrl, reqHeader, 200, resHeader, []byte(payload))
+	e, err := signedexchange.NewExchange(parsedUrl, reqHeader, 200, resHeader, []byte(params.payload))
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +149,8 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 		validityUrl:       "https://" + demo_domain_name + "/cert/null.validity.msg",
 		pemCerts:          certs_ec256,
 		pemPrivateKey:     key_ec256,
-		filename:          "hello.html",
+		contentType:       "text/html; charset=utf-8",
+		payload:           []byte(defaultPayload),
 		linkPreloadString: "",
 		date:              time.Now().Add(-time.Second * 10),
 	}
@@ -174,6 +185,22 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 	case "/sxg/old_ocsp.sxg":
 		params.certUrl = "https://" + demo_appspot_name + "/cert/old_ocsp"
 		serveExchange(params, w)
+	case "/sxg/nested_sxg.sxg":
+		var buf bytes.Buffer
+		sxg, err := createExchange(params)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if err := sxg.Write(&buf, params.ver); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		params.contentUrl = "https://" + demo_domain_name + "/hello_ec.sxg"
+		params.contentType = contentType(params.ver)
+		params.payload = buf.Bytes()
+		serveExchange(params, w)
+
 	default:
 		http.Error(w, "signedExchangeHandler", 404)
 	}
