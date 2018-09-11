@@ -53,6 +53,26 @@ func getOCSP(ctx appengine.Context, certs []*x509.Certificate) ([]byte, error) {
 	return output, nil
 }
 
+func createCertChainCBOR(certs []*x509.Certificate, ocsp []byte, sct []byte) ([]byte, error) {
+	if len(certs) == 0 {
+		return nil, errors.New("empty certs")
+	}
+
+	certChain := certurl.CertChain{}
+	for _, cert := range certs {
+		certChain = append(certChain, &certurl.CertChainItem{Cert: cert})
+	}
+	certChain[0].OCSPResponse = ocsp
+	certChain[0].SCTList = sct
+
+	buf := &bytes.Buffer{}
+	if err := certChain.Write(buf); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
 func getCertMessage(ctx appengine.Context, pem []byte) ([]byte, error) {
 	certs, err := signedexchange.ParseCertificates(pem)
 	if err != nil {
@@ -63,7 +83,7 @@ func getCertMessage(ctx appengine.Context, pem []byte) ([]byte, error) {
 		return nil, err
 	}
 	// TODO: Support sct
-	return certurl.CreateCertChainCBOR(certs, ocsp, nil)
+	return createCertChainCBOR(certs, ocsp, nil)
 }
 
 func respondWithCertificateMessage(w http.ResponseWriter, r *http.Request, pem []byte) {
@@ -94,7 +114,7 @@ func certHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		message, err := certurl.CreateCertChainCBOR(parced_certs, old_ocsp, nil)
+		message, err := createCertChainCBOR(parced_certs, old_ocsp, nil)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
