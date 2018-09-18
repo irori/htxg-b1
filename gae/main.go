@@ -89,7 +89,9 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		SXGs: []string{
 			"hello_ec.sxg",
 			"404_cert_url.sxg",
+			"sha256_mismatch.sxg",
 			"expired.sxg",
+			"expired_cert.sxg",
 			"invalid_validity_url.sxg",
 			"old_ocsp.sxg",
 			"nested_sxg.sxg",

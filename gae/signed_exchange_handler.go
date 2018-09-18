@@ -167,12 +167,12 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 	case "/sxg/404_cert_url.sxg":
 		params.certUrl = "https://" + demo_appspot_name + "/cert/not_found"
 		serveExchange(params, w)
-	case "/sxg/invalid_cert_url.sxg":
+	case "/sxg/expired_cert.sxg":
 		params.certUrl = "https://" + demo_appspot_name + "/cert/ec256_invalid"
 		params.pemCerts = certs_ec256_invalid
 		params.pemPrivateKey = key_ec256_invalid
 		serveExchange(params, w)
-	case "/sxg/sha256_missmatch.sxg":
+	case "/sxg/sha256_mismatch.sxg":
 		params.pemCerts = certs_ec256_invalid
 		params.pemPrivateKey = key_ec256_invalid
 		serveExchange(params, w)
