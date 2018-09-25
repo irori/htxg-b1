@@ -200,7 +200,9 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 		params.contentType = contentType(params.ver)
 		params.payload = buf.Bytes()
 		serveExchange(params, w)
-
+	case "/sxg/fallback_to_outer_url.sxg":
+		params.contentUrl = "https://" + demo_appspot_name + "/sxg/fallback_to_outer_url.sxg"
+		serveExchange(params, w)
 	default:
 		http.Error(w, "signedExchangeHandler", 404)
 	}
