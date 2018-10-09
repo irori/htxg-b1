@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Signed Exchange test</title>
 <style>
-  .version-select {
+  .options {
     margin: 1rem;
   }
   .github-link {
@@ -19,15 +19,23 @@
       div.appendChild(document.createTextNode(txt));
       disp.appendChild(div);
   }
-  function addPrefetch(url) {
+  function addPrefetch(button) {
+    url = button.parentElement.querySelector('a').href;
     log('-- addPrefetch --');
     let link = document.createElement('link');
     link.rel = 'prefetch';
     link.href = url;
     document.body.appendChild(link);
   }
-  function changeVer(ver) {
-      location.search = '?v=' + ver;
+  function updateHref() {
+    let ver = document.querySelector('.version-select input:checked').value;
+    let ot = document.querySelector('.ot-select input:checked').value;
+    for (let a of document.querySelectorAll('.sxg a')) {
+      let url = new URL(a.href);
+      url.searchParams.set('v', ver);
+      url.searchParams.set('ot', ot);
+      a.href = url.toString();
+    }
   }
 
   if (window.PerformanceObserver) {
@@ -41,22 +49,35 @@
 
   </script>
   <div class="github-link"><a href="https://github.com/irori/htxg-b1">View on GitHub</a></div>
+  <div class="options">
   <div class="version-select">
     Version:
-    <input type="radio" id="auto" name="v" value="" {{if eq .Ver ""}}checked{{end}} onclick="changeVer('')"><label for="auto">auto</label>
-    <input type="radio" id="1b1" name="v" value="1b1" {{if eq .Ver "1b1"}}checked{{end}} onclick="changeVer('1b1')"><label for="1b1">b1</label>
-    <input type="radio" id="1b2" name="v" value="1b2" {{if eq .Ver "1b2"}}checked{{end}} onclick="changeVer('1b2')"><label for="1b2">b2</label>
+    <input type="radio" id="auto" name="v" value="auto" checked><label for="auto">auto</label>
+    <input type="radio" id="1b1" name="v" value="1b1"><label for="1b1">b1</label>
+    <input type="radio" id="1b2" name="v" value="1b2"><label for="1b2">b2</label>
+  </div>
+  <div class="ot-select">
+    Origin Trial:
+    <input type="radio" id="enabled" name="ot" value="true" checked><label for="enabled">enabled</label>
+    <input type="radio" id="disabled" name="ot" value="false"><label for="disabled">disabled</label>
+  </div>
   </div>
 
   {{ range .SXGs }}
     <div class="sxg">
-      <input type="button" onclick="addPrefetch('https://{{ $.Host }}/sxg/{{ . }}?v={{ $.Ver }}')" value="prefetch">
-      <a href="https://{{ $.Host }}/sxg/{{ . }}?v={{ $.Ver }}">{{ . }}</a>
+      <input type="button" onclick="addPrefetch(this)" value="prefetch">
+      <a href="https://{{ $.Host }}/sxg/{{ . }}">{{ . }}</a>
     </div>
   {{ end }}
   <div class="sxg">
-    <input type="button" onclick="addPrefetch('http://{{ .Host }}/sxg/hello_ec.sxg?v={{ .Ver }}')" value="prefetch">
-    <a href="http://{{ .Host }}/sxg/hello_ec.sxg?v={{ .Ver }}">non secure hello_ec.sxg</a>
+    <input type="button" onclick="addPrefetch(this)" value="prefetch">
+    <a href="http://{{ .Host }}/sxg/hello_ec.sxg">non secure hello_ec.sxg</a>
   </div>
   <div id="disp"></div>
+
+  <script>
+    for (let radio of document.querySelectorAll('.options input'))
+		radio.onclick = updateHref;
+	updateHref();
+  </script>
 </body>

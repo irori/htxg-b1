@@ -78,17 +78,14 @@ func main() {
 }
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
 	t := template.Must(template.ParseFiles("templates/index.html"))
 
 	type Data struct {
 		Host string
-		Ver string
 		SXGs []string
 	}
 	data := Data {
 		Host: demo_appspot_name,
-		Ver: q.Get("v"),
 		SXGs: []string{
 			"hello_ec.sxg",
 			"404_cert_url.sxg",

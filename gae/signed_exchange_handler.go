@@ -124,7 +124,7 @@ func versionFromAcceptHeader(accept string) (version.Version, error) {
 	return "", errors.New("Cannot determine SXG version from Accept: header")
 }
 
-func serveExchange(params *exchangeParams, w http.ResponseWriter) {
+func serveExchange(params *exchangeParams, q url.Values, w http.ResponseWriter) {
 	e, err := createExchange(params)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -132,7 +132,7 @@ func serveExchange(params *exchangeParams, w http.ResponseWriter) {
 	}
 
 	w.Header().Set("Content-Type", contentType(params.ver))
-	if origin_trial_token != "" {
+	if q.Get("ot") == "true" && origin_trial_token != "" {
 		w.Header().Set("Origin-Trial", origin_trial_token)
 	}
 	e.Write(w, params.ver)
@@ -165,34 +165,34 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.URL.Path {
 	case "/sxg/hello_ec.sxg":
-		serveExchange(params, w)
+		serveExchange(params, q, w)
 	case "/sxg/hello_rsa.sxg":
 		params.contentUrl = "https://" + demo_domain_name + "/hello_rsa.html"
 		params.certUrl = "https://" + demo_appspot_name + "/cert/rsa"
 		params.pemCerts = certs_rsa
 		params.pemPrivateKey = key_rsa
-		serveExchange(params, w)
+		serveExchange(params, q, w)
 	case "/sxg/404_cert_url.sxg":
 		params.certUrl = "https://" + demo_appspot_name + "/cert/not_found"
-		serveExchange(params, w)
+		serveExchange(params, q, w)
 	case "/sxg/expired_cert.sxg":
 		params.certUrl = "https://" + demo_appspot_name + "/cert/ec256_invalid"
 		params.pemCerts = certs_ec256_invalid
 		params.pemPrivateKey = key_ec256_invalid
-		serveExchange(params, w)
+		serveExchange(params, q, w)
 	case "/sxg/sha256_mismatch.sxg":
 		params.pemCerts = certs_ec256_invalid
 		params.pemPrivateKey = key_ec256_invalid
-		serveExchange(params, w)
+		serveExchange(params, q, w)
 	case "/sxg/expired.sxg":
 		params.date = time.Now().Add(-time.Hour * 240)
-		serveExchange(params, w)
+		serveExchange(params, q, w)
 	case "/sxg/invalid_validity_url.sxg":
 		params.validityUrl = "https://invalid." + demo_domain_name + "/cert/null.validity.msg"
-		serveExchange(params, w)
+		serveExchange(params, q, w)
 	case "/sxg/old_ocsp.sxg":
 		params.certUrl = "https://" + demo_appspot_name + "/cert/old_ocsp"
-		serveExchange(params, w)
+		serveExchange(params, q, w)
 	case "/sxg/nested_sxg.sxg":
 		var buf bytes.Buffer
 		sxg, err := createExchange(params)
@@ -207,10 +207,10 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 		params.contentUrl = "https://" + demo_domain_name + "/hello_ec.sxg"
 		params.contentType = contentType(params.ver)
 		params.payload = buf.Bytes()
-		serveExchange(params, w)
+		serveExchange(params, q, w)
 	case "/sxg/fallback_to_outer_url.sxg":
 		params.contentUrl = "https://" + demo_appspot_name + "/sxg/fallback_to_outer_url.sxg"
-		serveExchange(params, w)
+		serveExchange(params, q, w)
 	default:
 		http.Error(w, "signedExchangeHandler", 404)
 	}
