@@ -114,10 +114,11 @@ func contentType(v version.Version) string {
 
 func versionFromAcceptHeader(accept string) (version.Version, error) {
 	for _, t := range strings.Split(accept, ",") {
-		switch strings.TrimSpace(t) {
-		case "application/signed-exchange;v=b1":
+		s := strings.TrimSpace(t)
+		if strings.HasPrefix(s,  "application/signed-exchange;v=b1") {
 			return version.Version1b1, nil
-		case "application/signed-exchange;v=b2":
+		}
+		if strings.HasPrefix(s,  "application/signed-exchange;v=b2") {
 			return version.Version1b2, nil
 		}
 	}
