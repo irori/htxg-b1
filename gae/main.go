@@ -29,6 +29,7 @@ var (
 	certs_ec256_invalid []byte
 	
 	old_ocsp  []byte
+	origin_trial_token string
 )
 
 type Config struct {
@@ -42,6 +43,7 @@ type Config struct {
 	EC256InvalidCertFile   string `json:"ec256_invalid_cert_file"`
 	
 	OldOCSPFile   string `json:"old_ocsp_file"`
+	OriginTrialToken string `json:"origin_trial_token"`
 }
 
 func init() {
@@ -65,6 +67,7 @@ func init() {
 	certs_ec256_invalid, _ = ioutil.ReadFile(config.EC256InvalidCertFile)
 	
 	old_ocsp, _ = ioutil.ReadFile(config.OldOCSPFile)
+	origin_trial_token = config.OriginTrialToken
 }
 
 func main() {

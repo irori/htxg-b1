@@ -130,6 +130,11 @@ func serveExchange(params *exchangeParams, w http.ResponseWriter) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	w.Header().Set("Content-Type", contentType(params.ver))
+	if origin_trial_token != "" {
+		w.Header().Set("Origin-Trial", origin_trial_token)
+	}
 	e.Write(w, params.ver)
 }
 
@@ -144,8 +149,6 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	w.Header().Set("Content-Type", contentType(ver))
 
 	params := &exchangeParams{
 		ver:               ver,
