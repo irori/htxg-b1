@@ -112,16 +112,16 @@ func contentType(v version.Version) string {
 	}
 }
 
-func versionFromAcceptHeader(accept string) version.Version {
+func versionFromAcceptHeader(accept string) (version.Version, error) {
 	for _, t := range strings.Split(accept, ",") {
 		switch strings.TrimSpace(t) {
 		case "application/signed-exchange;v=b1":
-			return version.Version1b1
+			return version.Version1b1, nil
 		case "application/signed-exchange;v=b2":
-			return version.Version1b2
+			return version.Version1b2, nil
 		}
 	}
-	return version.Version1b2
+	return "", errors.New("Cannot determine SXG version from Accept: header")
 }
 
 func serveExchange(params *exchangeParams, w http.ResponseWriter) {
@@ -137,7 +137,12 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	ver, ok := version.Parse(q.Get("v"))
 	if !ok {
-		ver = versionFromAcceptHeader(r.Header.Get("accept"))
+		var err error
+		ver, err = versionFromAcceptHeader(r.Header.Get("accept"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 
 	w.Header().Set("Content-Type", contentType(ver))
