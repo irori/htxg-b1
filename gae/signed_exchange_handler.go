@@ -76,11 +76,11 @@ func createExchange(params *exchangeParams) (*signedexchange.Exchange, error) {
 		resHeader.Add("link", params.linkPreloadString)
 	}
 
-	e, err := signedexchange.NewExchange(parsedUrl, reqHeader, 200, resHeader, []byte(params.payload))
+	e, err := signedexchange.NewExchange(params.ver, parsedUrl, reqHeader, 200, resHeader, []byte(params.payload))
 	if err != nil {
 		return nil, err
 	}
-	if err := e.MiEncodePayload(4096, params.ver); err != nil {
+	if err := e.MiEncodePayload(4096); err != nil {
 		return nil, err
 	}
 
@@ -95,7 +95,7 @@ func createExchange(params *exchangeParams) (*signedexchange.Exchange, error) {
 	if s == nil {
 		return nil, errors.New("Failed to sign")
 	}
-	if err := e.AddSignatureHeader(s, params.ver); err != nil {
+	if err := e.AddSignatureHeader(s); err != nil {
 		return nil, err
 	}
 	return e, nil
@@ -136,7 +136,7 @@ func serveExchange(params *exchangeParams, q url.Values, w http.ResponseWriter) 
 	if q.Get("ot") == "true" && origin_trial_token != "" {
 		w.Header().Set("Origin-Trial", origin_trial_token)
 	}
-	e.Write(w, params.ver)
+	e.Write(w)
 }
 
 func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
@@ -201,7 +201,7 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if err := sxg.Write(&buf, params.ver); err != nil {
+		if err := sxg.Write(&buf); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
