@@ -5,8 +5,6 @@
 package main
 
 import (
-	"appengine"
-	"appengine/urlfetch"
 	"bytes"
 	"crypto/x509"
 	"errors"
@@ -17,7 +15,7 @@ import (
 	"net/http"
 )
 
-func getOCSP(ctx appengine.Context, certs []*x509.Certificate) ([]byte, error) {
+func getOCSP(certs []*x509.Certificate) ([]byte, error) {
 	if len(certs) < 2 {
 		return nil, errors.New("failed to parse cert")
 	}
@@ -38,9 +36,8 @@ func getOCSP(ctx appengine.Context, certs []*x509.Certificate) ([]byte, error) {
 	}
 	request.Header.Add("Content-Type", "application/ocsp-request")
 	request.Header.Add("Accept", "application/ocsp-response")
-	client := urlfetch.Client(ctx)
 
-	response, err := client.Do(request)
+	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
@@ -73,12 +70,12 @@ func createCertChainCBOR(certs []*x509.Certificate, ocsp []byte, sct []byte) ([]
 	return buf.Bytes(), nil
 }
 
-func getCertMessage(ctx appengine.Context, pem []byte) ([]byte, error) {
+func getCertMessage(pem []byte) ([]byte, error) {
 	certs, err := signedexchange.ParseCertificates(pem)
 	if err != nil {
 		return nil, err
 	}
-	ocsp, err := getOCSP(ctx, certs)
+	ocsp, err := getOCSP(certs)
 	if err != nil {
 		return nil, err
 	}
@@ -87,8 +84,7 @@ func getCertMessage(ctx appengine.Context, pem []byte) ([]byte, error) {
 }
 
 func respondWithCertificateMessage(w http.ResponseWriter, r *http.Request, pem []byte) {
-	ctx := appengine.NewContext(r)
-	message, err := getCertMessage(ctx, pem)
+	message, err := getCertMessage(pem)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
