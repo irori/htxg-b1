@@ -122,3 +122,14 @@ func certHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Error(w, "Not Found", 404)
 }
+
+func getSubjectCommonName(pem []byte) (string, error) {
+	certs, err := signedexchange.ParseCertificates(pem)
+	if err != nil {
+		return "", err
+	}
+	if len(certs) == 0 {
+		return "", errors.New("Empty certificate")
+	}
+	return certs[0].Subject.CommonName, nil
+}

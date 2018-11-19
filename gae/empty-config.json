@@ -1,6 +1,4 @@
 {
-    "demo_domain": "",
-    "demo_appspot": "",
     "ec256_key_file": "",
     "ec256_cert_file": "",
     "rsa_key_file": "",

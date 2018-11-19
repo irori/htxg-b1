@@ -154,7 +154,7 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 	params := &exchangeParams{
 		ver:               ver,
 		contentUrl:        "https://" + demo_domain_name + "/hello_ec.html",
-		certUrl:           "https://" + demo_appspot_name + "/cert/ec256",
+		certUrl:           "https://" + r.Host + "/cert/ec256",
 		validityUrl:       "https://" + demo_domain_name + "/cert/null.validity.msg",
 		pemCerts:          certs_ec256,
 		pemPrivateKey:     key_ec256,
@@ -169,15 +169,15 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 		serveExchange(params, q, w)
 	case "/sxg/hello_rsa.sxg":
 		params.contentUrl = "https://" + demo_domain_name + "/hello_rsa.html"
-		params.certUrl = "https://" + demo_appspot_name + "/cert/rsa"
+		params.certUrl = "https://" + r.Host + "/cert/rsa"
 		params.pemCerts = certs_rsa
 		params.pemPrivateKey = key_rsa
 		serveExchange(params, q, w)
 	case "/sxg/404_cert_url.sxg":
-		params.certUrl = "https://" + demo_appspot_name + "/cert/not_found"
+		params.certUrl = "https://" + r.Host + "/cert/not_found"
 		serveExchange(params, q, w)
 	case "/sxg/expired_cert.sxg":
-		params.certUrl = "https://" + demo_appspot_name + "/cert/ec256_invalid"
+		params.certUrl = "https://" + r.Host + "/cert/ec256_invalid"
 		params.pemCerts = certs_ec256_invalid
 		params.pemPrivateKey = key_ec256_invalid
 		serveExchange(params, q, w)
@@ -192,7 +192,7 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 		params.validityUrl = "https://invalid." + demo_domain_name + "/cert/null.validity.msg"
 		serveExchange(params, q, w)
 	case "/sxg/old_ocsp.sxg":
-		params.certUrl = "https://" + demo_appspot_name + "/cert/old_ocsp"
+		params.certUrl = "https://" + r.Host + "/cert/old_ocsp"
 		serveExchange(params, q, w)
 	case "/sxg/nested_sxg.sxg":
 		var buf bytes.Buffer
@@ -210,7 +210,7 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 		params.payload = buf.Bytes()
 		serveExchange(params, q, w)
 	case "/sxg/fallback_to_outer_url.sxg":
-		params.contentUrl = "https://" + demo_appspot_name + "/sxg/fallback_to_outer_url.sxg"
+		params.contentUrl = "https://" + r.Host + "/sxg/fallback_to_outer_url.sxg"
 		serveExchange(params, q, w)
 	default:
 		http.Error(w, "signedExchangeHandler", 404)

@@ -16,7 +16,6 @@ import (
 
 var (
 	demo_domain_name  string
-	demo_appspot_name string
 
 	key_ec256   []byte
 	certs_ec256 []byte
@@ -32,8 +31,6 @@ var (
 )
 
 type Config struct {
-	DemoDomainName  string `json:"demo_domain"`
-	DemoAppSpotName string `json:"demo_appspot"`
 	EC256KeyFile    string `json:"ec256_key_file"`
 	EC256CertFile   string `json:"ec256_cert_file"`
 	RSAKeyFile      string `json:"rsa_key_file"`
@@ -55,16 +52,18 @@ func init() {
 	jsonParser := json.NewDecoder(file)
 	jsonParser.Decode(&config)
 
-	demo_domain_name = config.DemoDomainName
-	demo_appspot_name = config.DemoAppSpotName
-
 	key_ec256, _ = ioutil.ReadFile(config.EC256KeyFile)
 	certs_ec256, _ = ioutil.ReadFile(config.EC256CertFile)
 	key_rsa, _ = ioutil.ReadFile(config.RSAKeyFile)
 	certs_rsa, _ = ioutil.ReadFile(config.RSACertFile)
 	key_ec256_invalid, _ = ioutil.ReadFile(config.EC256InvalidKeyFile)
 	certs_ec256_invalid, _ = ioutil.ReadFile(config.EC256InvalidCertFile)
-	
+
+	demo_domain_name, err = getSubjectCommonName(certs_ec256)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	old_ocsp, _ = ioutil.ReadFile(config.OldOCSPFile)
 	origin_trial_token = config.OriginTrialToken
 }
@@ -92,7 +91,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		SXGs []string
 	}
 	data := Data {
-		Host: demo_appspot_name,
+		Host: r.Host,
 		SXGs: []string{
 			"hello_ec.sxg",
 			"404_cert_url.sxg",
