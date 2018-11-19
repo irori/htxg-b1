@@ -1,8 +1,6 @@
 {
     "ec256_key_file": "",
     "ec256_cert_file": "",
-    "rsa_key_file": "",
-    "rsa_cert_file": "",
     "ec256_invalid_key_file": "",
     "ec256_invalid_cert_file": "",
     "old_ocsp_file": ""

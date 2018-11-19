@@ -167,12 +167,6 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/sxg/hello_ec.sxg":
 		serveExchange(params, q, w)
-	case "/sxg/hello_rsa.sxg":
-		params.contentUrl = "https://" + demo_domain_name + "/hello_rsa.html"
-		params.certUrl = "https://" + r.Host + "/cert/rsa"
-		params.pemCerts = certs_rsa
-		params.pemPrivateKey = key_rsa
-		serveExchange(params, q, w)
 	case "/sxg/404_cert_url.sxg":
 		params.certUrl = "https://" + r.Host + "/cert/not_found"
 		serveExchange(params, q, w)

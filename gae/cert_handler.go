@@ -98,9 +98,6 @@ func certHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/cert/ec256" {
 		respondWithCertificateMessage(w, r, certs_ec256)
 		return
-	} else if r.URL.Path == "/cert/rsa" {
-		respondWithCertificateMessage(w, r, certs_rsa)
-		return
 	} else if r.URL.Path == "/cert/ec256_invalid" {
 		respondWithCertificateMessage(w, r, certs_ec256_invalid)
 		return

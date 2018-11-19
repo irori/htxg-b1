@@ -20,9 +20,6 @@ var (
 	key_ec256   []byte
 	certs_ec256 []byte
 
-	key_rsa   []byte
-	certs_rsa []byte
-	
 	key_ec256_invalid   []byte
 	certs_ec256_invalid []byte
 	
@@ -33,8 +30,6 @@ var (
 type Config struct {
 	EC256KeyFile    string `json:"ec256_key_file"`
 	EC256CertFile   string `json:"ec256_cert_file"`
-	RSAKeyFile      string `json:"rsa_key_file"`
-	RSACertFile     string `json:"rsa_cert_file"`
 	EC256InvalidKeyFile    string `json:"ec256_invalid_key_file"`
 	EC256InvalidCertFile   string `json:"ec256_invalid_cert_file"`
 	
@@ -54,8 +49,6 @@ func init() {
 
 	key_ec256, _ = ioutil.ReadFile(config.EC256KeyFile)
 	certs_ec256, _ = ioutil.ReadFile(config.EC256CertFile)
-	key_rsa, _ = ioutil.ReadFile(config.RSAKeyFile)
-	certs_rsa, _ = ioutil.ReadFile(config.RSACertFile)
 	key_ec256_invalid, _ = ioutil.ReadFile(config.EC256InvalidKeyFile)
 	certs_ec256_invalid, _ = ioutil.ReadFile(config.EC256InvalidCertFile)
 
