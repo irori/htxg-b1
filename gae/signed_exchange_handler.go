@@ -76,7 +76,7 @@ func createExchange(params *exchangeParams) (*signedexchange.Exchange, error) {
 		resHeader.Add("link", params.linkPreloadString)
 	}
 
-	e, err := signedexchange.NewExchange(params.ver, parsedUrl, reqHeader, 200, resHeader, []byte(params.payload))
+	e, err := signedexchange.NewExchange(params.ver, parsedUrl, http.MethodGet, reqHeader, 200, resHeader, []byte(params.payload))
 	if err != nil {
 		return nil, err
 	}
