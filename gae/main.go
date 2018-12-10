@@ -6,6 +6,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"html/template"
 	"io/ioutil"
@@ -15,6 +16,8 @@ import (
 )
 
 var (
+	httpsFlag = flag.Bool("https", false, "Serve over HTTPS")
+
 	demo_domain_name  string
 
 	key_ec256   []byte
@@ -62,18 +65,27 @@ func init() {
 }
 
 func main() {
+	flag.Parse()
+
 	http.HandleFunc("/cert/", certHandler)
 	http.HandleFunc("/sxg/", signedExchangeHandler)
 	http.HandleFunc("/", defaultHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
-		log.Printf("Defaulting to port %s", port)
+		if *httpsFlag {
+			port = "8443"
+		} else {
+			port = "8080"
+		}
 	}
 
 	log.Printf("Listening on port %s", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
+	if *httpsFlag {
+		log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%s", port), "cert.pem", "key.pem", nil))
+	} else {
+		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
+	}
 }
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
