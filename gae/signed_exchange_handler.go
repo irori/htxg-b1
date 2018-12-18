@@ -64,10 +64,6 @@ func createExchange(params *exchangeParams) (*signedexchange.Exchange, error) {
 	if privkey == nil {
 		return nil, errors.New("invalid private key")
 	}
-	parsedUrl, err := url.Parse(params.contentUrl)
-	if err != nil {
-		return nil, errors.New("failed to parse URL")
-	}
 	reqHeader := http.Header{}
 	resHeader := http.Header{}
 	resHeader.Add("content-type", params.contentType)
@@ -76,10 +72,8 @@ func createExchange(params *exchangeParams) (*signedexchange.Exchange, error) {
 		resHeader.Add("link", params.linkPreloadString)
 	}
 
-	e, err := signedexchange.NewExchange(params.ver, parsedUrl, http.MethodGet, reqHeader, 200, resHeader, []byte(params.payload))
-	if err != nil {
-		return nil, err
-	}
+	e := signedexchange.NewExchangeNoCheck(params.ver, params.contentUrl, http.MethodGet, reqHeader, 200, resHeader, []byte(params.payload))
+
 	if err := e.MiEncodePayload(4096); err != nil {
 		return nil, err
 	}
@@ -202,6 +196,12 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 		params.contentUrl = "https://" + demo_domain_name + "/hello_ec.sxg"
 		params.contentType = contentType(params.ver)
 		params.payload = buf.Bytes()
+		serveExchange(params, q, w)
+	case "/sxg/inner-url-utf8-bom.sxg":
+		params.contentUrl = "\xef\xbb\xbf" + params.contentUrl
+		serveExchange(params, q, w)
+	case "/sxg/utf8-inner-url.sxg":
+		params.contentUrl = "https://" + demo_domain_name + "/🌐📦.html"
 		serveExchange(params, q, w)
 	case "/sxg/fallback_to_outer_url.sxg":
 		params.contentUrl = "https://" + r.Host + "/sxg/fallback_to_outer_url.sxg"
