@@ -108,6 +108,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 			"nested_sxg.sxg",
 			"inner-url-utf8-bom.sxg",
 			"utf8-inner-url.sxg",
+			"invalid-utf8-inner-url.sxg",
 			"fallback_to_outer_url.sxg",
 		},
 	}

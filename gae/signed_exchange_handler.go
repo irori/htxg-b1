@@ -203,6 +203,9 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 	case "/sxg/utf8-inner-url.sxg":
 		params.contentUrl = "https://" + demo_domain_name + "/🌐📦.html"
 		serveExchange(params, q, w)
+	case "/sxg/invalid-utf8-inner-url.sxg":
+		params.contentUrl = "https://" + demo_domain_name + "/\xce\xce\xa9.html"
+		serveExchange(params, q, w)
 	case "/sxg/fallback_to_outer_url.sxg":
 		params.contentUrl = "https://" + r.Host + "/sxg/fallback_to_outer_url.sxg"
 		serveExchange(params, q, w)
