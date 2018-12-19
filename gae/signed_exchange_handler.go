@@ -101,6 +101,8 @@ func contentType(v version.Version) string {
 		return "application/signed-exchange;v=b1"
 	case version.Version1b2:
 		return "application/signed-exchange;v=b2"
+	case version.Version1b3:
+		return "application/signed-exchange;v=b3"
 	default:
 		panic("not reached")
 	}
@@ -114,6 +116,9 @@ func versionFromAcceptHeader(accept string) (version.Version, error) {
 		}
 		if strings.HasPrefix(s,  "application/signed-exchange;v=b2") {
 			return version.Version1b2, nil
+		}
+		if strings.HasPrefix(s,  "application/signed-exchange;v=b3") {
+			return version.Version1b3, nil
 		}
 	}
 	return "", errors.New("Cannot determine SXG version from Accept: header")
