@@ -132,6 +132,7 @@ func serveExchange(params *exchangeParams, q url.Values, w http.ResponseWriter) 
 	}
 
 	w.Header().Set("Content-Type", contentType(params.ver))
+	w.Header().Set("X-Content-Type-Options", "nosniff")
 	if q.Get("ot") == "true" && origin_trial_token != "" {
 		w.Header().Set("Origin-Trial", origin_trial_token)
 	}
