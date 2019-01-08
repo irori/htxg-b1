@@ -31,16 +31,16 @@ const defaultPayload = `<!DOCTYPE html>
 `
 
 type exchangeParams struct {
-	ver               version.Version
-	contentUrl        string
-	certUrl           string
-	validityUrl       string
-	pemCerts          []byte
-	pemPrivateKey     []byte
-	contentType       string
-	resHeader         http.Header
-	payload           []byte
-	date              time.Time
+	ver           version.Version
+	contentUrl    string
+	certUrl       string
+	validityUrl   string
+	pemCerts      []byte
+	pemPrivateKey []byte
+	contentType   string
+	resHeader     http.Header
+	payload       []byte
+	date          time.Time
 }
 
 func createExchange(params *exchangeParams) (*signedexchange.Exchange, error) {
@@ -106,13 +106,13 @@ func contentType(v version.Version) string {
 func versionFromAcceptHeader(accept string) (version.Version, error) {
 	for _, t := range strings.Split(accept, ",") {
 		s := strings.TrimSpace(t)
-		if strings.HasPrefix(s,  "application/signed-exchange;v=b1") {
+		if strings.HasPrefix(s, "application/signed-exchange;v=b1") {
 			return version.Version1b1, nil
 		}
-		if strings.HasPrefix(s,  "application/signed-exchange;v=b2") {
+		if strings.HasPrefix(s, "application/signed-exchange;v=b2") {
 			return version.Version1b2, nil
 		}
-		if strings.HasPrefix(s,  "application/signed-exchange;v=b3") {
+		if strings.HasPrefix(s, "application/signed-exchange;v=b3") {
 			return version.Version1b3, nil
 		}
 	}
@@ -147,16 +147,16 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := &exchangeParams{
-		ver:               ver,
-		contentUrl:        "https://" + demo_domain_name + "/hello_ec.html",
-		certUrl:           "https://" + r.Host + "/cert/ec256",
-		validityUrl:       "https://" + demo_domain_name + "/cert/null.validity.msg",
-		pemCerts:          certs_ec256,
-		pemPrivateKey:     key_ec256,
-		contentType:       "text/html; charset=utf-8",
-		resHeader:         http.Header{},
-		payload:           []byte(defaultPayload),
-		date:              time.Now().Add(-time.Second * 10),
+		ver:           ver,
+		contentUrl:    "https://" + demo_domain_name + "/hello_ec.html",
+		certUrl:       "https://" + r.Host + "/cert/ec256",
+		validityUrl:   "https://" + demo_domain_name + "/cert/null.validity.msg",
+		pemCerts:      certs_ec256,
+		pemPrivateKey: key_ec256,
+		contentType:   "text/html; charset=utf-8",
+		resHeader:     http.Header{},
+		payload:       []byte(defaultPayload),
+		date:          time.Now().Add(-time.Second * 10),
 	}
 
 	switch r.URL.Path {
