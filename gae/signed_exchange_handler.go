@@ -38,8 +38,8 @@ type exchangeParams struct {
 	pemCerts          []byte
 	pemPrivateKey     []byte
 	contentType       string
+	resHeader         http.Header
 	payload           []byte
-	linkPreloadString string
 	date              time.Time
 }
 
@@ -65,14 +65,9 @@ func createExchange(params *exchangeParams) (*signedexchange.Exchange, error) {
 		return nil, errors.New("invalid private key")
 	}
 	reqHeader := http.Header{}
-	resHeader := http.Header{}
-	resHeader.Add("content-type", params.contentType)
+	params.resHeader.Add("content-type", params.contentType)
 
-	if params.linkPreloadString != "" {
-		resHeader.Add("link", params.linkPreloadString)
-	}
-
-	e := signedexchange.NewExchangeNoCheck(params.ver, params.contentUrl, http.MethodGet, reqHeader, 200, resHeader, []byte(params.payload))
+	e := signedexchange.NewExchangeNoCheck(params.ver, params.contentUrl, http.MethodGet, reqHeader, 200, params.resHeader, []byte(params.payload))
 
 	if err := e.MiEncodePayload(4096); err != nil {
 		return nil, err
@@ -159,8 +154,8 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 		pemCerts:          certs_ec256,
 		pemPrivateKey:     key_ec256,
 		contentType:       "text/html; charset=utf-8",
+		resHeader:         http.Header{},
 		payload:           []byte(defaultPayload),
-		linkPreloadString: "",
 		date:              time.Now().Add(-time.Second * 10),
 	}
 
@@ -214,6 +209,9 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 		serveExchange(params, q, w)
 	case "/sxg/fallback_to_outer_url.sxg":
 		params.contentUrl = "https://" + r.Host + "/sxg/fallback_to_outer_url.sxg"
+		serveExchange(params, q, w)
+	case "/sxg/response_not_cacheable.sxg":
+		params.resHeader.Add("cache-control", "no-store")
 		serveExchange(params, q, w)
 	default:
 		http.Error(w, "signedExchangeHandler", 404)
