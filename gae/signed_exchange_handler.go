@@ -67,7 +67,7 @@ func createExchange(params *exchangeParams) (*signedexchange.Exchange, error) {
 	reqHeader := http.Header{}
 	params.resHeader.Add("content-type", params.contentType)
 
-	e := signedexchange.NewExchangeNoCheck(params.ver, params.contentUrl, http.MethodGet, reqHeader, 200, params.resHeader, []byte(params.payload))
+	e := signedexchange.NewExchange(params.ver, params.contentUrl, http.MethodGet, reqHeader, 200, params.resHeader, []byte(params.payload))
 
 	if err := e.MiEncodePayload(4096); err != nil {
 		return nil, err

@@ -51,16 +51,10 @@ func getOCSP(certs []*x509.Certificate) ([]byte, error) {
 }
 
 func createCertChainCBOR(certs []*x509.Certificate, ocsp []byte, sct []byte) ([]byte, error) {
-	if len(certs) == 0 {
-		return nil, errors.New("empty certs")
+	certChain, err := certurl.NewCertChain(certs, ocsp, sct)
+	if err != nil {
+		return nil, err
 	}
-
-	certChain := certurl.CertChain{}
-	for _, cert := range certs {
-		certChain = append(certChain, &certurl.CertChainItem{Cert: cert})
-	}
-	certChain[0].OCSPResponse = ocsp
-	certChain[0].SCTList = sct
 
 	buf := &bytes.Buffer{}
 	if err := certChain.Write(buf); err != nil {
