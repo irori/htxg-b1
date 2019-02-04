@@ -111,6 +111,8 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 			"invalid-utf8-inner-url.sxg",
 			"fallback_to_outer_url.sxg",
 			"response_not_cacheable.sxg",
+			"variant-mismatch.sxg",
+			"no-variant-key.sxg",
 		},
 	}
 

@@ -213,6 +213,13 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 	case "/sxg/response_not_cacheable.sxg":
 		params.resHeader.Add("cache-control", "no-store")
 		serveExchange(params, q, w)
+	case "/sxg/variant-mismatch.sxg":
+		params.resHeader.Add("variants-04", "Accept-Language;en;zzz")
+		params.resHeader.Add("variant-key-04", "zzz")
+		serveExchange(params, q, w)
+	case "/sxg/no-variant-key.sxg":
+		params.resHeader.Add("variants-04", "Accept-Language;en;de")
+		serveExchange(params, q, w)
 	default:
 		http.Error(w, "signedExchangeHandler", 404)
 	}
