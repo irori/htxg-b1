@@ -66,6 +66,7 @@ func createExchange(params *exchangeParams) (*signedexchange.Exchange, error) {
 	}
 	reqHeader := http.Header{}
 	params.resHeader.Add("content-type", params.contentType)
+	params.resHeader.Add("timing-allow-origin", "*")
 
 	e := signedexchange.NewExchange(params.ver, params.contentUrl, http.MethodGet, reqHeader, 200, params.resHeader, []byte(params.payload))
 
@@ -128,6 +129,7 @@ func serveExchange(params *exchangeParams, q url.Values, w http.ResponseWriter) 
 
 	w.Header().Set("Content-Type", contentType(params.ver))
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Timing-Allow-Origin", "*")
 	if q.Get("ot") == "true" && origin_trial_token != "" {
 		w.Header().Set("Origin-Trial", origin_trial_token)
 	}
