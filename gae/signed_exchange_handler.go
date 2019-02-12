@@ -6,6 +6,7 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/pem"
 	"errors"
 	"net/http"
@@ -225,6 +226,14 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 	case "/sxg/variant-fr.sxg":
 		params.resHeader.Add("variants-04", "Accept-Language;en;fr")
 		params.resHeader.Add("variant-key-04", "fr")
+		serveExchange(params, q, w)
+	case "/sxg/gzip-inner-encoding.sxg":
+		var gzbuf bytes.Buffer
+		gz := gzip.NewWriter(&gzbuf)
+		gz.Write(params.payload)
+		gz.Close()
+		params.payload = gzbuf.Bytes()
+		params.resHeader.Add("content-encoding", "gzip")
 		serveExchange(params, q, w)
 	default:
 		http.Error(w, "signedExchangeHandler", 404)

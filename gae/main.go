@@ -114,6 +114,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 			"no-variant-key.sxg",
 			"variant-en.sxg",
 			"variant-fr.sxg",
+			"gzip-inner-encoding.sxg",
 		},
 	}
 
