@@ -25,6 +25,7 @@
     let link = document.createElement('link');
     link.rel = 'prefetch';
     link.href = url;
+    link.addEventListener('error', () => log('Prefetch failed ' + url));
     document.body.appendChild(link);
   }
   function updateHref() {
