@@ -115,6 +115,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 			"variant-en.sxg",
 			"variant-fr.sxg",
 			"gzip-inner-encoding.sxg",
+			"merkle-integrity-error.sxg",
 		},
 	}
 

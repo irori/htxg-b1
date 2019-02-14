@@ -121,14 +121,17 @@ func versionFromAcceptHeader(accept string) (version.Version, error) {
 	return "", errors.New("Cannot determine SXG version from Accept: header")
 }
 
-func serveExchange(params *exchangeParams, q url.Values, w http.ResponseWriter) {
+func createAndServeExchange(params *exchangeParams, q url.Values, w http.ResponseWriter) {
 	e, err := createExchange(params)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	serveExchange(e, q, w)
+}
 
-	w.Header().Set("Content-Type", contentType(params.ver))
+func serveExchange(e *signedexchange.Exchange, q url.Values, w http.ResponseWriter) {
+	w.Header().Set("Content-Type", contentType(e.Version))
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("Timing-Allow-Origin", "*")
 	if q.Get("ot") == "true" && origin_trial_token != "" {
@@ -164,28 +167,28 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.URL.Path {
 	case "/sxg/hello_ec.sxg":
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/404_cert_url.sxg":
 		params.certUrl = "https://" + r.Host + "/cert/not_found"
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/expired_cert.sxg":
 		params.certUrl = "https://" + r.Host + "/cert/ec256_invalid"
 		params.pemCerts = certs_ec256_invalid
 		params.pemPrivateKey = key_ec256_invalid
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/sha256_mismatch.sxg":
 		params.pemCerts = certs_ec256_invalid
 		params.pemPrivateKey = key_ec256_invalid
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/expired.sxg":
 		params.date = time.Now().Add(-time.Hour * 240)
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/invalid_validity_url.sxg":
 		params.validityUrl = "https://invalid." + demo_domain_name + "/cert/null.validity.msg"
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/old_ocsp.sxg":
 		params.certUrl = "https://" + r.Host + "/cert/old_ocsp"
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/nested_sxg.sxg":
 		var buf bytes.Buffer
 		sxg, err := createExchange(params)
@@ -200,33 +203,33 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 		params.contentUrl = "https://" + demo_domain_name + "/hello_ec.sxg"
 		params.contentType = contentType(params.ver)
 		params.payload = buf.Bytes()
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/inner-url-utf8-bom.sxg":
 		params.contentUrl = "\xef\xbb\xbf" + params.contentUrl
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/utf8-inner-url.sxg":
 		params.contentUrl = "https://" + demo_domain_name + "/🌐📦.html"
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/invalid-utf8-inner-url.sxg":
 		params.contentUrl = "https://" + demo_domain_name + "/\xce\xce\xa9.html"
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/fallback_to_outer_url.sxg":
 		params.contentUrl = "https://" + r.Host + "/sxg/fallback_to_outer_url.sxg"
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/response_not_cacheable.sxg":
 		params.resHeader.Add("cache-control", "no-store")
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/no-variant-key.sxg":
 		params.resHeader.Add("variants-04", "Accept-Language;en;de")
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/variant-en.sxg":
 		params.resHeader.Add("variants-04", "Accept-Language;en;fr")
 		params.resHeader.Add("variant-key-04", "en")
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/variant-fr.sxg":
 		params.resHeader.Add("variants-04", "Accept-Language;en;fr")
 		params.resHeader.Add("variant-key-04", "fr")
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
 	case "/sxg/gzip-inner-encoding.sxg":
 		var gzbuf bytes.Buffer
 		gz := gzip.NewWriter(&gzbuf)
@@ -234,7 +237,15 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 		gz.Close()
 		params.payload = gzbuf.Bytes()
 		params.resHeader.Add("content-encoding", "gzip")
-		serveExchange(params, q, w)
+		createAndServeExchange(params, q, w)
+	case "/sxg/merkle-integrity-error.sxg":
+		e, err := createExchange(params)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		e.Payload[len(e.Payload)-1] ^= 0xff
+		serveExchange(e, q, w)
 	default:
 		http.Error(w, "signedExchangeHandler", 404)
 	}
