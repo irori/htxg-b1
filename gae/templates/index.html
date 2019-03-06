@@ -30,11 +30,9 @@
   }
   function updateHref() {
     let ver = document.querySelector('.version-select input:checked').value;
-    let ot = document.querySelector('.ot-select input:checked').value;
     for (let a of document.querySelectorAll('.sxg a')) {
       let url = new URL(a.href);
       url.searchParams.set('v', ver);
-      url.searchParams.set('ot', ot);
       a.href = url.toString();
     }
   }
@@ -51,18 +49,13 @@
   </script>
   <div class="github-link"><a href="https://github.com/irori/htxg-b1">View on GitHub</a></div>
   <div class="options">
-  <div class="version-select">
-    Version:
-    <input type="radio" id="auto" name="v" value="auto" checked><label for="auto">auto</label>
-    <input type="radio" id="1b1" name="v" value="1b1"><label for="1b1">b1</label>
-    <input type="radio" id="1b2" name="v" value="1b2"><label for="1b2">b2</label>
-    <input type="radio" id="1b3" name="v" value="1b3"><label for="1b3">b3</label>
-  </div>
-  <div class="ot-select">
-    Origin Trial:
-    <input type="radio" id="ot-enable" name="ot" value="true" checked><label for="ot-enable">enable</label>
-    <input type="radio" id="ot-disable" name="ot" value="false"><label for="ot-disable">disable</label>
-  </div>
+    <div class="version-select">
+      Version:
+      <input type="radio" id="auto" name="v" value="auto" checked><label for="auto">auto</label>
+      <input type="radio" id="1b1" name="v" value="1b1"><label for="1b1">b1</label>
+      <input type="radio" id="1b2" name="v" value="1b2"><label for="1b2">b2</label>
+      <input type="radio" id="1b3" name="v" value="1b3"><label for="1b3">b3</label>
+    </div>
   </div>
 
   {{ range .SXGs }}

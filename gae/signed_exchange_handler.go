@@ -134,9 +134,6 @@ func serveExchange(e *signedexchange.Exchange, q url.Values, w http.ResponseWrit
 	w.Header().Set("Content-Type", contentType(e.Version))
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("Timing-Allow-Origin", "*")
-	if q.Get("ot") == "true" && origin_trial_token != "" {
-		w.Header().Set("Origin-Trial", origin_trial_token)
-	}
 	e.Write(w)
 }
 
