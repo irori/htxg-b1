@@ -66,6 +66,7 @@ func main() {
 
 	http.HandleFunc("/cert/", certHandler)
 	http.HandleFunc("/sxg/", signedExchangeHandler)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/", defaultHandler)
 
 	port := os.Getenv("PORT")
@@ -96,6 +97,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		Host: r.Host,
 		SXGs: []string{
 			"hello_ec.sxg",
+			"fallback_test.sxg",
 			"404_cert_url.sxg",
 			"sha256_mismatch.sxg",
 			"expired.sxg",

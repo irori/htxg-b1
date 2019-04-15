@@ -165,6 +165,9 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/sxg/hello_ec.sxg":
 		createAndServeExchange(params, q, w)
+	case "/sxg/fallback_test.sxg":
+		params.contentUrl = "https://" + r.Host + "/static/fallback.html"
+		createAndServeExchange(params, q, w)
 	case "/sxg/404_cert_url.sxg":
 		params.certUrl = "https://" + r.Host + "/cert/not_found"
 		createAndServeExchange(params, q, w)
