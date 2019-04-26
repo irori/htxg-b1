@@ -7,7 +7,6 @@ package main
 import (
 	"bytes"
 	"compress/gzip"
-	"encoding/pem"
 	"errors"
 	"net/http"
 	"net/url"
@@ -54,11 +53,7 @@ func createExchange(params *exchangeParams) (*signedexchange.Exchange, error) {
 	if certs == nil {
 		return nil, errors.New("invalid certificate")
 	}
-	parsedPrivKey, _ := pem.Decode(params.pemPrivateKey)
-	if parsedPrivKey == nil {
-		return nil, errors.New("invalid private key")
-	}
-	privkey, err := signedexchange.ParsePrivateKey(parsedPrivKey.Bytes)
+	privkey, err := signedexchange.ParsePrivateKey(params.pemPrivateKey)
 	if err != nil {
 		return nil, err
 	}
