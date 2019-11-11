@@ -128,6 +128,7 @@ func createAndServeExchange(params *exchangeParams, q url.Values, w http.Respons
 func serveExchange(e *signedexchange.Exchange, q url.Values, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", contentType(e.Version))
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Timing-Allow-Origin", "*")
 	e.Write(w)
 }
