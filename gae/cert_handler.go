@@ -10,45 +10,8 @@ import (
 	"errors"
 	"github.com/WICG/webpackage/go/signedexchange"
 	"github.com/WICG/webpackage/go/signedexchange/certurl"
-	"golang.org/x/crypto/ocsp"
-	"io/ioutil"
 	"net/http"
 )
-
-func getOCSP(certs []*x509.Certificate) ([]byte, error) {
-	if len(certs) < 2 {
-		return nil, errors.New("failed to parse cert")
-	}
-	cert := certs[0]
-	if len(cert.OCSPServer) == 0 {
-		return nil, errors.New("No OCSPServer")
-	}
-	ocspUrl := cert.OCSPServer[0]
-	issuer := certs[1]
-
-	buffer, err := ocsp.CreateRequest(cert, issuer, &ocsp.RequestOptions{})
-	if err != nil {
-		return nil, err
-	}
-	request, err := http.NewRequest("POST", ocspUrl, bytes.NewReader(buffer))
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Add("Content-Type", "application/ocsp-request")
-	request.Header.Add("Accept", "application/ocsp-response")
-
-	response, err := http.DefaultClient.Do(request)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-	output, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return output, nil
-}
 
 func createCertChainCBOR(certs []*x509.Certificate, ocsp []byte, sct []byte) ([]byte, error) {
 	certChain, err := certurl.NewCertChain(certs, ocsp, sct)
@@ -69,7 +32,7 @@ func getCertMessage(pem []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	ocsp, err := getOCSP(certs)
+	ocsp, err := certurl.FetchOCSPResponse(certs, true)
 	if err != nil {
 		return nil, err
 	}
