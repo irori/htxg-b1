@@ -210,7 +210,7 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 		params.contentUrl = "https://" + demo_domain_name + "/\xce\xce\xa9.html"
 		createAndServeExchange(params, q, w)
 	case "/sxg/fallback_to_outer_url.sxg":
-		params.contentUrl = "https://" + r.Host + "/sxg/fallback_to_outer_url.sxg"
+		params.contentUrl = "https://" + r.Host + "/sxg/fallback_to_outer_url.sxg?" + r.URL.RawQuery
 		createAndServeExchange(params, q, w)
 	case "/sxg/response_not_cacheable.sxg":
 		params.resHeader.Add("cache-control", "no-store")
