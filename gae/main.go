@@ -67,6 +67,7 @@ func main() {
 	http.HandleFunc("/cert/", certHandler)
 	http.HandleFunc("/sxg/", signedExchangeHandler)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	http.Handle("/redirect-loop", http.RedirectHandler("/redirect-loop", http.StatusSeeOther))
 	http.HandleFunc("/", defaultHandler)
 
 	port := os.Getenv("PORT")
