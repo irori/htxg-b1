@@ -18,24 +18,24 @@ import (
 var (
 	httpsFlag = flag.Bool("https", false, "Serve over HTTPS")
 
-	demo_domain_name  string
+	demo_domain_name string
 
 	key_ec256   []byte
 	certs_ec256 []byte
 
 	key_ec256_invalid   []byte
 	certs_ec256_invalid []byte
-	
-	old_ocsp  []byte
+
+	old_ocsp []byte
 )
 
 type Config struct {
-	EC256KeyFile    string `json:"ec256_key_file"`
-	EC256CertFile   string `json:"ec256_cert_file"`
-	EC256InvalidKeyFile    string `json:"ec256_invalid_key_file"`
-	EC256InvalidCertFile   string `json:"ec256_invalid_cert_file"`
-	
-	OldOCSPFile   string `json:"old_ocsp_file"`
+	EC256KeyFile         string `json:"ec256_key_file"`
+	EC256CertFile        string `json:"ec256_cert_file"`
+	EC256InvalidKeyFile  string `json:"ec256_invalid_key_file"`
+	EC256InvalidCertFile string `json:"ec256_invalid_cert_file"`
+
+	OldOCSPFile string `json:"old_ocsp_file"`
 }
 
 func init() {
@@ -94,7 +94,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 		Host string
 		SXGs []string
 	}
-	data := Data {
+	data := Data{
 		Host: r.Host,
 		SXGs: []string{
 			"hello_ec.sxg",
@@ -116,6 +116,8 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 			"variant-fr.sxg",
 			"gzip-inner-encoding.sxg",
 			"merkle-integrity-error.sxg",
+			"missing-inner-content-type.sxg",
+			"wrong-inner-content-type.sxg",
 		},
 	}
 

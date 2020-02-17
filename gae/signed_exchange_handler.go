@@ -61,7 +61,9 @@ func createExchange(params *exchangeParams) (*signedexchange.Exchange, error) {
 		return nil, errors.New("invalid private key")
 	}
 	reqHeader := http.Header{}
-	params.resHeader.Add("content-type", params.contentType)
+	if params.contentType != "" {
+		params.resHeader.Add("content-type", params.contentType)
+	}
 	params.resHeader.Add("timing-allow-origin", "*")
 
 	e := signedexchange.NewExchange(params.ver, params.contentUrl, http.MethodGet, reqHeader, 200, params.resHeader, []byte(params.payload))
@@ -242,6 +244,12 @@ func signedExchangeHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		e.Payload[len(e.Payload)-1] ^= 0xff
 		serveExchange(e, q, w)
+	case "/sxg/missing-inner-content-type.sxg":
+		params.contentType = ""
+		createAndServeExchange(params, q, w)
+	case "/sxg/wrong-inner-content-type.sxg":
+		params.contentType = ","
+		createAndServeExchange(params, q, w)
 	default:
 		http.Error(w, "signedExchangeHandler", 404)
 	}
